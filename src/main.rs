@@ -1,5 +1,5 @@
 #![warn(clippy::pedantic)]
-use aoc2022::{fileload, one, day::Day};
+use aoc2022::{day::Day, fileload, one};
 use std::{env, process::ExitCode};
 
 fn main() -> ExitCode {
