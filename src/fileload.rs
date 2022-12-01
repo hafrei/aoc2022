@@ -3,8 +3,8 @@ use std::{env, fs::File, io::Read, str::FromStr};
 
 const INPUTS_DIR: &str = "inputs";
 
-pub fn read_input(day: String, input_buffer: &mut String) -> Result<Day, FileLoadError> {
-    let proj_file = format!("{}.rs", &day);
+pub fn read_input(day: &str, input_buffer: &mut String) -> Result<Day, FileLoadError> {
+    let proj_file = format!("{}.rs", day);
     let mut root = env::current_dir()?;
 
     root.push(proj_file);
@@ -25,7 +25,7 @@ pub fn read_input(day: String, input_buffer: &mut String) -> Result<Day, FileLoa
         return Err(FileLoadError::FileNotFound);
     }
 
-    Ok(Day::from_str(&day)?)
+    Ok(Day::from_str(day)?)
 }
 
 #[derive(Debug)]

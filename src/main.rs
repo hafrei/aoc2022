@@ -9,8 +9,8 @@ fn main() -> ExitCode {
             eprintln!("Can't do something with nothing! Give me a day to run!");
             return ExitCode::FAILURE;
         }
-        Some(input) => match fileload::read_input(input.to_lowercase(), &mut input_buffer) {
-            Ok(day) => day,
+        Some(input) => match fileload::read_input(&input.to_lowercase(), &mut input_buffer) {
+            Ok(day_enum) => day_enum,
             Err(e) => {
                 eprintln!("Error occurred: {e:?}");
                 return ExitCode::FAILURE;
