@@ -20,7 +20,7 @@ fn part_one(input: String) -> u32 {
             cache += i.parse::<u32>().unwrap();
         }
     }
-   max 
+    max
 }
 
 fn part_two(input: String) -> u32 {
