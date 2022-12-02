@@ -2,18 +2,27 @@ struct Match {
     game: Vec<Round>,
 }
 
+enum Mode {
+    Simulate,
+    Plan,
+}
+
 impl Match {
     fn new(input: String) -> Self {
         let mut buf: Vec<Round> = Vec::new();
         for i in input.lines() {
             buf.push(Round::new(i.to_string()));
         }
-        Match { game: buf}
+        Match { game: buf }
     }
-    fn run(&self) -> u32 {
+    fn run(&self, mode: Mode) -> u32 {
         let mut score = 0;
         for r in self.game.iter() {
-            score += r.resolve();
+            score += if matches!(mode, Mode::Simulate) {
+                r.resolve()
+            } else {
+                r.plan()
+            }
         }
         score
     }
@@ -22,6 +31,7 @@ impl Match {
 struct Round {
     theirs: Throw,
     ours: Throw,
+    outcome: Outcome,
 }
 
 impl Round {
@@ -33,19 +43,42 @@ impl Round {
         } else {
             Throw::Scissors
         };
-        let ours = if r.contains("X") {
-            Throw::Rock
+        let (ours, outcome) = if r.contains("X") {
+            (Throw::Rock, Outcome::Lose)
         } else if r.contains("Y") {
-            Throw::Paper
+            (Throw::Paper, Outcome::Draw)
         } else {
-            Throw::Scissors
+            (Throw::Scissors, Outcome::Win)
         };
-        Round { theirs, ours }
+        Round {
+            theirs,
+            ours,
+            outcome,
+        }
     }
     fn resolve(&self) -> u32 {
         let outcome = self.ours.exchange(&self.theirs);
-        println!("Throwing {:?} vs {:?} = {:?} \t That's {} + {}", self.ours, self.theirs, outcome, self.ours.value(), outcome.value());
+        println!(
+            "Throwing {:?} vs {:?} = {:?} \t That's {} + {}",
+            self.ours,
+            self.theirs,
+            outcome,
+            self.ours.value(),
+            outcome.value()
+        );
         outcome.value() + self.ours.value()
+    }
+    fn plan(&self) -> u32 {
+        let throw = self.outcome.plan_round(&self.theirs);
+        println!(
+            "Need {:?} vs {:?} = {:?} \t That's {} + {}",
+            self.outcome,
+            self.theirs,
+            throw,
+            throw.value(),
+            self.outcome.value()
+        );
+        throw.value() + self.outcome.value()
     }
 }
 
@@ -61,6 +94,25 @@ impl Outcome {
             Self::Win => 6,
             Self::Lose => 0,
             Self::Draw => 3,
+        }
+    }
+    fn plan_round(&self, theirs: &Throw) -> Throw {
+        match self {
+            Outcome::Win => match theirs {
+                Throw::Rock => Throw::Paper,
+                Throw::Paper => Throw::Scissors,
+                Throw::Scissors => Throw::Rock,
+            },
+            Outcome::Draw => match theirs {
+                Throw::Rock => Throw::Rock,
+                Throw::Paper => Throw::Paper,
+                Throw::Scissors => Throw::Scissors,
+            },
+            Outcome::Lose => match theirs {
+                Throw::Rock => Throw::Scissors,
+                Throw::Paper => Throw::Rock,
+                Throw::Scissors => Throw::Paper,
+            },
         }
     }
 }
@@ -102,11 +154,10 @@ impl Throw {
 }
 
 pub fn run(input: String) {
-    let first = part_one(input.clone());
+    let matchup = Match::new(input);
+    let first = matchup.run(Mode::Simulate);
     println!("First: {first}");
+    let second = matchup.run(Mode::Plan);
+    println!("Second: {second}");
 }
 
-fn part_one(input: String) -> u32 {
-    let first_match = Match::new(input);
-    first_match.run()
-}
