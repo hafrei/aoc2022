@@ -1,5 +1,13 @@
 use rayon::prelude::*;
 
+pub fn run(input: String) {
+    let matchup = Match::new(input);
+    let first = matchup.run(Mode::Simulate);
+    println!("First: {first}");
+    let second = matchup.run(Mode::Plan);
+    println!("Second: {second}");
+}
+
 struct Match {
     pub game: Vec<Round>,
 }
@@ -158,12 +166,4 @@ impl Throw {
             },
         }
     }
-}
-
-pub fn run(input: String) {
-    let matchup = Match::new(input);
-    let first = matchup.run(Mode::Simulate);
-    println!("First: {first}");
-    let second = matchup.run(Mode::Plan);
-    println!("Second: {second}");
 }

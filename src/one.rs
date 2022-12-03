@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 pub fn run(input: String) {
     let first = part_one(input.clone());
     println!("{}", first);
@@ -43,8 +45,7 @@ fn part_two(input: String) -> u32 {
         sums.push(cache);
     }
 
-    sums.sort();
-    sums.reverse();
+    sums.par_sort_by(|a, b| b.cmp(a));
     sums.truncate(3);
     sums.into_iter().sum()
 }
