@@ -1,5 +1,7 @@
+use rayon::prelude::*;
+
 struct Match {
-    game: Vec<Round>,
+    pub game: Vec<Round>,
 }
 
 enum Mode {
@@ -16,15 +18,16 @@ impl Match {
         Match { game: buf }
     }
     fn run(&self, mode: Mode) -> u32 {
-        let mut score = 0;
-        for r in self.game.iter() {
-            score += if matches!(mode, Mode::Simulate) {
-                r.resolve()
-            } else {
-                r.plan()
-            }
-        }
-        score
+        self.game
+            .par_iter()
+            .map(|r| {
+                if matches!(mode, Mode::Simulate) {
+                    r.resolve()
+                } else {
+                    r.plan()
+                }
+            })
+            .sum()
     }
 }
 
@@ -58,6 +61,7 @@ impl Round {
     }
     fn resolve(&self) -> u32 {
         let outcome = self.ours.exchange(&self.theirs);
+        /*
         println!(
             "Throwing {:?} vs {:?} = {:?} \t That's {} + {}",
             self.ours,
@@ -66,10 +70,12 @@ impl Round {
             self.ours.value(),
             outcome.value()
         );
+        */
         outcome.value() + self.ours.value()
     }
     fn plan(&self) -> u32 {
         let throw = self.outcome.plan_round(&self.theirs);
+        /*
         println!(
             "Need {:?} vs {:?} = {:?} \t That's {} + {}",
             self.outcome,
@@ -78,6 +84,7 @@ impl Round {
             throw.value(),
             self.outcome.value()
         );
+        */
         throw.value() + self.outcome.value()
     }
 }
@@ -160,4 +167,3 @@ pub fn run(input: String) {
     let second = matchup.run(Mode::Plan);
     println!("Second: {second}");
 }
-
