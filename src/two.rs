@@ -1,3 +1,4 @@
+use self::{Outcome::*, Throw::*};
 use rayon::prelude::*;
 
 pub fn run(input: String) {
@@ -48,18 +49,18 @@ struct Round {
 impl Round {
     fn new(r: String) -> Self {
         let theirs = if r.contains('A') {
-            Throw::Rock
+            Rock
         } else if r.contains('B') {
-            Throw::Paper
+            Paper
         } else {
-            Throw::Scissors
+            Scissors
         };
         let (ours, outcome) = if r.contains('X') {
-            (Throw::Rock, Outcome::Lose)
+            (Rock, Lose)
         } else if r.contains('Y') {
-            (Throw::Paper, Outcome::Draw)
+            (Paper, Draw)
         } else {
-            (Throw::Scissors, Outcome::Win)
+            (Scissors, Win)
         };
         Round {
             theirs,
@@ -106,27 +107,27 @@ enum Outcome {
 impl Outcome {
     fn value(&self) -> u32 {
         match &self {
-            Self::Win => 6,
-            Self::Lose => 0,
-            Self::Draw => 3,
+            Win => 6,
+            Lose => 0,
+            Draw => 3,
         }
     }
     fn plan_round(&self, theirs: &Throw) -> Throw {
-        match self {
-            Outcome::Win => match theirs {
-                Throw::Rock => Throw::Paper,
-                Throw::Paper => Throw::Scissors,
-                Throw::Scissors => Throw::Rock,
+        match *self {
+            Win => match theirs {
+                Rock => Paper,
+                Paper => Scissors,
+                Scissors => Rock,
             },
-            Outcome::Draw => match theirs {
-                Throw::Rock => Throw::Rock,
-                Throw::Paper => Throw::Paper,
-                Throw::Scissors => Throw::Scissors,
+            Draw => match theirs {
+                Rock => Rock,
+                Paper => Paper,
+                Scissors => Scissors,
             },
-            Outcome::Lose => match theirs {
-                Throw::Rock => Throw::Scissors,
-                Throw::Paper => Throw::Rock,
-                Throw::Scissors => Throw::Paper,
+            Lose => match theirs {
+                Rock => Scissors,
+                Paper => Rock,
+                Scissors => Paper,
             },
         }
     }
@@ -142,27 +143,27 @@ enum Throw {
 impl Throw {
     fn value(&self) -> u32 {
         match &self {
-            Self::Rock => 1,
-            Self::Paper => 2,
-            Self::Scissors => 3,
+            Rock => 1,
+            Paper => 2,
+            Scissors => 3,
         }
     }
     fn exchange(&self, rhs: &Throw) -> Outcome {
-        match self {
-            Throw::Rock => match rhs {
-                Throw::Rock => Outcome::Draw,
-                Throw::Paper => Outcome::Lose,
-                Throw::Scissors => Outcome::Win,
+        match *self {
+            Rock => match rhs {
+                Rock => Draw,
+                Paper => Lose,
+                Scissors => Win,
             },
-            Throw::Paper => match rhs {
-                Throw::Rock => Outcome::Win,
-                Throw::Paper => Outcome::Draw,
-                Throw::Scissors => Outcome::Lose,
+            Paper => match rhs {
+                Rock => Win,
+                Paper => Draw,
+                Scissors => Lose,
             },
-            Throw::Scissors => match rhs {
-                Throw::Rock => Outcome::Lose,
-                Throw::Paper => Outcome::Win,
-                Throw::Scissors => Outcome::Draw,
+            Scissors => match rhs {
+                Rock => Lose,
+                Paper => Win,
+                Scissors => Draw,
             },
         }
     }
