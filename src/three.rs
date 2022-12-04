@@ -1,5 +1,8 @@
 use rayon::prelude::*;
 
+const LOWERCASE_OFFSET: u32 = 96;
+const UPPERCASE_OFFSET: u32 = 38;
+
 pub fn run(input: String) {
     let first = first(input.clone());
     println!("First: {first}");
@@ -48,7 +51,7 @@ fn second(input: String) -> u32 {
 
 fn determine_value(input: char) -> u32 {
     if input.is_lowercase() {
-        u32::from(input) - 96
+        u32::from(input) - LOWERCASE_OFFSET
     } else {
         u32::from(input) - 38
     }
