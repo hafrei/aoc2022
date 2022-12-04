@@ -53,6 +53,6 @@ fn determine_value(input: char) -> u32 {
     if input.is_lowercase() {
         u32::from(input) - LOWERCASE_OFFSET
     } else {
-        u32::from(input) - UPPERCASE_OFFSET 
+        u32::from(input) - UPPERCASE_OFFSET
     }
 }

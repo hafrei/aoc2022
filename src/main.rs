@@ -1,5 +1,5 @@
 #![warn(clippy::pedantic)]
-use aoc2022::{day::Day, fileload, one, three, two};
+use aoc2022::{day::Day, fileload, four, one, three, two};
 use std::{env, process::ExitCode};
 
 fn main() -> ExitCode {
@@ -22,6 +22,7 @@ fn main() -> ExitCode {
         Day::One => one::run(input_buffer),
         Day::Two => two::run(input_buffer),
         Day::Three => three::run(input_buffer),
+        Day::Four => four::run(input_buffer),
         _ => {} //Noop, many checks will have made it so
     }
     ExitCode::SUCCESS
