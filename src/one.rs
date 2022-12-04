@@ -12,7 +12,7 @@ fn part_one(input: String) -> u32 {
     let mut cache: u32 = 0;
 
     for i in input.lines() {
-        if i.len() == 0 {
+        if i.is_empty() {
             if max < cache {
                 max = cache;
             }
@@ -34,7 +34,7 @@ fn part_two(input: String) -> u32 {
     let mut cache = 0;
 
     for i in input.lines() {
-        if i.len() == 0 {
+        if i.is_empty() {
             sums.push(cache);
             cache = 0;
         } else {

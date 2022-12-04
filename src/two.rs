@@ -47,16 +47,16 @@ struct Round {
 
 impl Round {
     fn new(r: String) -> Self {
-        let theirs = if r.contains("A") {
+        let theirs = if r.contains('A') {
             Throw::Rock
-        } else if r.contains("B") {
+        } else if r.contains('B') {
             Throw::Paper
         } else {
             Throw::Scissors
         };
-        let (ours, outcome) = if r.contains("X") {
+        let (ours, outcome) = if r.contains('X') {
             (Throw::Rock, Outcome::Lose)
-        } else if r.contains("Y") {
+        } else if r.contains('Y') {
             (Throw::Paper, Outcome::Draw)
         } else {
             (Throw::Scissors, Outcome::Win)

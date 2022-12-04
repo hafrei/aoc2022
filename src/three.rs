@@ -17,7 +17,7 @@ fn first(input: String) -> u32 {
             matched.dedup();
             matched
                 .into_iter()
-                .map(|i| determine_value(i))
+                .map(determine_value)
                 .collect::<Vec<u32>>()
         })
         .flatten()
@@ -39,7 +39,7 @@ fn second(input: String) -> u32 {
             matched.dedup();
             matched
                 .into_iter()
-                .map(|i| determine_value(i))
+                .map(determine_value)
                 .collect::<Vec<u32>>()
         })
         .flatten()
@@ -47,11 +47,9 @@ fn second(input: String) -> u32 {
 }
 
 fn determine_value(input: char) -> u32 {
-    let ret = if input.is_lowercase() {
+    if input.is_lowercase() {
         u32::from(input) - 96
     } else {
         u32::from(input) - 38
-    };
-    // println!("{input}: {ret}");
-    ret
+    }
 }
