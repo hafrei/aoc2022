@@ -1,3 +1,4 @@
+use self::FileLoadError::*;
 use crate::day::Day;
 use std::{env, fs::File, io::Read, str::FromStr};
 
@@ -11,7 +12,7 @@ pub fn read_input(day: &str, input_buffer: &mut String) -> Result<Day, FileLoadE
     root.push(proj_file);
 
     if !root.is_file() {
-        return Err(FileLoadError::DayNotReady);
+        return Err(DayNotReady);
     }
 
     root.pop();
@@ -23,7 +24,7 @@ pub fn read_input(day: &str, input_buffer: &mut String) -> Result<Day, FileLoadE
         let mut f = File::open(root)?;
         f.read_to_string(input_buffer)?;
     } else {
-        return Err(FileLoadError::FileNotFound);
+        return Err(FileNotFound);
     }
     let res = Day::from_str(day)?;
 
