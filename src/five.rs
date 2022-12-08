@@ -1,6 +1,8 @@
 pub fn run(input: String) {
     let first = first(input.clone());
     println!("First: {first}");
+    let second = second(input);
+    println!("Second: {second}");
 }
 
 #[derive(Debug)]
@@ -55,8 +57,7 @@ impl CraneYard {
             .lines()
             .filter(|x| x.contains(char::is_numeric))
             .take(1)
-            .map(|x| x.split_whitespace())
-            .flatten()
+            .flat_map(|x| x.split_whitespace())
             .map(|x| x.parse::<u32>())
             .map(Result::unwrap)
             .collect::<Vec<u32>>()
@@ -97,6 +98,23 @@ impl CraneYard {
         }
     }
 
+    fn run_9001_orders(&mut self) {
+        for order in self.orders.iter() {
+            let mut big_ol_crane = Vec::new();
+            for _ in 0..order.times {
+                big_ol_crane.push(
+                    self.stacks[order.origin - 1]
+                        .crates
+                        .pop()
+                        .expect("What wait how"),
+                );
+            }
+            self.stacks[order.dest - 1]
+                .crates
+                .append(&mut big_ol_crane.into_iter().rev().collect());
+        }
+    }
+
     fn top_crates(&mut self) -> String {
         let mut res = Vec::new();
         for stack in self.stacks.iter_mut() {
@@ -121,5 +139,12 @@ fn first(input: String) -> String {
     let mut yard = CraneYard::new();
     yard.populate(&input);
     yard.run_orders();
+    yard.top_crates()
+}
+
+fn second(input: String) -> String {
+    let mut yard = CraneYard::new();
+    yard.populate(&input);
+    yard.run_9001_orders();
     yard.top_crates()
 }
