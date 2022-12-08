@@ -4,41 +4,51 @@ pub fn run(input: String) {
 }
 
 #[derive(Debug)]
-struct CraneYard(pub Vec<Stack>);
+struct CraneYard {
+    stacks: Vec<Stack>,
+    orders: Vec<Orders>,
+}
+
+#[derive(Debug)]
+struct Orders {
+    origin: usize,
+    dest: usize,
+    times: usize,
+}
 
 impl CraneYard {
     fn new() -> Self {
-        Self(Vec::new())
+        Self {
+            stacks: Vec::new(),
+            orders: Vec::new(),
+        }
     }
     fn populate(&mut self, input: &str) {
         let stack_count = CraneYard::extract_stack_count(input);
+        let mut orders: Vec<Orders> = Vec::new();
+        Self::extract_orders(input.clone().to_string(), &mut orders);
         let piles: Vec<&str> = input
             .lines()
             .filter(|x| x.contains(char::is_alphabetic) && !x.contains(char::is_numeric))
-            .inspect(|x| println!("{x}"))
             .rev()
             .collect();
 
         let mut stacks = Vec::new();
-
-        //Stack_cound is vertical
-        //piles is horazontal
         let mut getter: usize = 1;
 
-        for y in 0..stack_count {
+        for _ in 0..stack_count {
             let mut stack = Stack::new();
             for x in 0..piles.len() {
                 let hup = piles[x as usize].chars().nth(getter as usize).unwrap();
                 if hup.is_alphabetic() {
-                stack.crates.push(
-                    hup
-                );
+                    stack.crates.push(hup);
                 }
             }
             stacks.push(stack);
-            getter +=4;
+            getter += 4;
         }
-        self.0.append(&mut stacks);
+        self.stacks.append(&mut stacks);
+        self.orders.append(&mut orders);
     }
     fn extract_stack_count(input: &str) -> u32 {
         input
@@ -53,6 +63,47 @@ impl CraneYard {
             .pop()
             .expect("How is this not a number")
     }
+
+    fn extract_orders(input: String, orders: &mut Vec<Orders>) {
+        orders.append(
+            &mut input
+                .lines()
+                .filter(|x| x.contains(char::is_numeric) && x.contains(char::is_alphabetic))
+                .map(|x| {
+                    x.split_whitespace()
+                        .map(|x| x.parse::<usize>())
+                        .filter(Result::is_ok)
+                        .map(Result::unwrap)
+                        .collect::<Vec<usize>>()
+                })
+                .map(|x| Orders {
+                    origin: x[1],
+                    dest: x[2],
+                    times: x[0],
+                })
+                .collect::<Vec<Orders>>(),
+        )
+    }
+
+    fn run_orders(&mut self) {
+        for order in self.orders.iter() {
+            for _ in 0..order.times {
+                let transit = self.stacks[order.origin - 1]
+                    .crates
+                    .pop()
+                    .expect("What wait how");
+                self.stacks[order.dest - 1].crates.push(transit);
+            }
+        }
+    }
+
+    fn top_crates(&mut self) -> String {
+        let mut res = Vec::new();
+        for stack in self.stacks.iter_mut() {
+            res.push(stack.crates.pop().unwrap());
+        }
+        String::from_iter(res.iter())
+    }
 }
 
 #[derive(Debug)]
@@ -66,9 +117,9 @@ impl Stack {
     }
 }
 
-fn first(input: String) -> u32 {
+fn first(input: String) -> String {
     let mut yard = CraneYard::new();
     yard.populate(&input);
-    println!("{:?}", yard.0);
-    0
+    yard.run_orders();
+    yard.top_crates()
 }
