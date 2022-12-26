@@ -34,14 +34,14 @@ pub fn run(input: String) {
     let root_dir = all_dirs.iter().find(|x| x.name == "/").unwrap(); //please panic if root dir is gone
     let free_space = DISK_SPACE - root_dir.size;
     println!("Free space is {free_space}");
-    println!("{all_dirs:#?}");
+    // println!("{all_dirs:#?}");
     let mut second_candidates: Vec<u32> = all_dirs
         .iter()
         .map(|x| x.size)
-        .filter(|x| x >= &SECOND_PART_MINIMUM)
+        .filter(|x| x + free_space >= SECOND_PART_MINIMUM)
         .collect();
     second_candidates.sort();
-    println!("{second_candidates:?}");
+    // println!("{second_candidates:?}");
     let second = second_candidates.first();
     println!("Second: {second:?}");
 }
@@ -74,9 +74,22 @@ struct ImmidiateDirectory {
 }
 
 #[derive(Debug)]
+struct FileDetails {
+    name: String,
+    parent: String,
+    size: u32,
+}
+
+impl FileDetails {
+    fn new(name: String, parent: String, size: u32) -> Self {
+        Self { name, parent, size }
+    }
+}
+
+#[derive(Debug)]
 enum FileType {
-    Directory((String, String)),       //name, parent
-    NormalFile((String, String, u32)), //name, parent, size
+    Directory(FileDetails),
+    NormalFile(FileDetails),
 }
 
 fn get_dir_sizes(supposed_directory: &[Vec<FileType>]) -> Vec<ImmidiateDirectory> {
@@ -86,9 +99,9 @@ fn get_dir_sizes(supposed_directory: &[Vec<FileType>]) -> Vec<ImmidiateDirectory
 
     for file_descriptor in supposed_directory.iter() {
         for info in file_descriptor {
-            if let FileType::NormalFile((_, parent, val)) = info {
-                temp_parent = parent.to_string();
-                size += val;
+            if let FileType::NormalFile(file_details) = info {
+                temp_parent = file_details.parent.clone();
+                size += file_details.size;
             };
         }
         let dir = ImmidiateDirectory {
@@ -101,20 +114,26 @@ fn get_dir_sizes(supposed_directory: &[Vec<FileType>]) -> Vec<ImmidiateDirectory
 
     dirs.sort();
 
+    let mut buf = Vec::new();
+    // println!("{dirs:?}");
+
     for file_descriptor in supposed_directory.iter() {
         for info in file_descriptor {
-            if let FileType::Directory((name, parent)) = info {
-                let new_size = if let Some(current) = dirs.iter().find(|x| &x.name == name) {
-                    current.size
-                } else {
-                    panic!("Oh no what how")
-                };
-                if let Some(parent) = dirs.iter_mut().find(|x| &x.name == parent) {
+            if let FileType::Directory(file_detail) = info {
+                let new_size =
+                    if let Some(current) = dirs.iter().find(|x| &x.name == &file_detail.name) {
+                        current.size
+                    } else {
+                        buf.push(info.clone());
+                        continue;
+                    };
+                if let Some(parent) = dirs.iter_mut().find(|x| &x.name == &file_detail.parent) {
                     parent.size += new_size;
                 };
             }
         }
     }
+    // println!("{buf:#?}");
     dirs
 }
 
@@ -144,7 +163,11 @@ fn create_structure(input: &Vec<String>, parent: &mut String) -> Vec<FileType> {
             {
                 let _ = inner_line.pop().expect("Dropping dir failed");
                 let name = inner_line.pop().expect("Nothing for name");
-                pile.push(FileType::Directory((name, parent.clone())));
+                pile.push(FileType::Directory(FileDetails::new(
+                    name,
+                    parent.clone(),
+                    0,
+                )));
             } else {
                 let size = inner_line
                     .pop()
@@ -152,7 +175,11 @@ fn create_structure(input: &Vec<String>, parent: &mut String) -> Vec<FileType> {
                     .parse::<u32>()
                     .expect("Not a number");
                 let name = inner_line.pop().expect("Nothing for name");
-                pile.push(FileType::NormalFile((name, parent.clone(), size)));
+                pile.push(FileType::NormalFile(FileDetails::new(
+                    name,
+                    parent.clone(),
+                    size,
+                )));
             }
         }
     }
