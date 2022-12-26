@@ -1,4 +1,8 @@
+use rayon::prelude::*;
 use std::fmt;
+
+const FIRST_PART_MINIMUM: u32 = 100_000;
+
 #[derive(PartialEq, Eq)]
 enum Commands {
     ChangeDirectory,
@@ -16,7 +20,7 @@ impl fmt::Display for Commands {
 
 pub fn run(input: String) {
     let first = first(input);
-    println!("First: {first}")
+    println!("First: {first}");
 }
 
 fn first(input: String) -> u32 {
@@ -31,23 +35,60 @@ fn first(input: String) -> u32 {
         })
         .filter(|x| !x.is_empty())
         .collect::<Vec<Vec<String>>>();
-    let mut eeeh: Vec<Vec<FileType>> = new_inter
-        .iter()
-        .rev()
-        .map(|x| create_structure(x))
-        .collect();
-    0
+    let supposed_directory: Vec<Vec<FileType>> =
+        new_inter.par_iter().rev().map(create_structure).collect();
+    let dirs = get_dir_sizes(&supposed_directory);
+    // println!("{dirs:?}");
+    dirs.into_iter()
+        .filter(|x| x.size <= FIRST_PART_MINIMUM)
+        .map(|x| x.size)
+        .sum()
 }
 
+#[derive(Debug)]
 struct ImmidiateDirectory {
     name: String,
-    children: Vec<FileType>,
+    size: u32,
 }
 
 #[derive(Debug)]
 enum FileType {
+    Within(String),
     Directory(String),
     NormalFile((String, u32)),
+}
+
+fn get_dir_sizes(supposed_directory: &[Vec<FileType>]) -> Vec<ImmidiateDirectory> {
+    let mut dirs: Vec<ImmidiateDirectory> = Vec::new();
+    let mut size: u32 = 0;
+
+    for hopefully_directory in supposed_directory.iter() {
+        if hopefully_directory.is_empty() {
+            continue;
+        } else {
+            for file_descriptor in hopefully_directory.iter() {
+                match file_descriptor {
+                    FileType::NormalFile((_, val)) => size += val,
+                    FileType::Within(name) => {
+                        let new_dir = ImmidiateDirectory {
+                            name: name.to_string(),
+                            size,
+                        };
+                        dirs.push(new_dir);
+                        size = 0;
+                    }
+                    FileType::Directory(name) => {
+                        if let Some(inner_size) =
+                            dirs.iter().find(|a| a.name.eq(name)).map(|x| x.size)
+                        {
+                            size += inner_size;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    dirs
 }
 
 fn create_structure(input: &Vec<String>) -> Vec<FileType> {
@@ -59,15 +100,18 @@ fn create_structure(input: &Vec<String>) -> Vec<FileType> {
             .rev()
             .map(|x| x.to_owned())
             .collect();
-        if line.contains(&format!("{}", Commands::ChangeDirectory)) {
+        if line.contains(&format!("{}", Commands::ChangeDirectory))
+            && !line.chars().any(|l| l.is_numeric())
+        {
             inner_line.pop();
             if inner_line.is_empty() || inner_line.contains(&"..".to_string()) {
                 break;
             } else {
                 let name = inner_line.pop().expect("Nothing for name");
-                pile.push(FileType::Directory(name));
+                pile.push(FileType::Within(name));
+                break;
             }
-        } else if line.contains(&format!("{}", Commands::ListStructure)) {
+        } else if line.contains(&format!("{}", Commands::ListStructure)) && line.len() == 2 {
             //noop
         } else {
             if inner_line.contains(&"dir".to_string()) {
