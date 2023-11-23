@@ -28,7 +28,7 @@ impl CraneYard {
     fn populate(&mut self, input: &str) {
         let stack_count = CraneYard::extract_stack_count(input);
         let mut orders: Vec<Orders> = Vec::new();
-        Self::extract_orders(input.clone().to_string(), &mut orders);
+        Self::extract_orders(input.to_string(), &mut orders);
         let piles: Vec<&str> = input
             .lines()
             .filter(|x| x.contains(char::is_alphabetic) && !x.contains(char::is_numeric))
