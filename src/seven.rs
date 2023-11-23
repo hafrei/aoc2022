@@ -51,7 +51,7 @@ enum FileType {
 
 pub fn run(input: String) {
     let mut max_depth: i32 = 0;
-    let all_dirs = get_dirs(input, &mut max_depth);
+    let mut all_dirs = get_dirs(input, &mut max_depth);
     let first: u32 = all_dirs
         .iter()
         .cloned()
@@ -60,6 +60,28 @@ pub fn run(input: String) {
         .map(|x| x.size)
         .sum();
     println!("First: {first}");
+
+    let mut root_size = 0;
+    if let Some(root) = all_dirs.iter().find(|x| x.name == "/") {
+        root_size = root.size;
+    };
+
+    let space_remaining = DISK_SPACE - root_size;
+    println!("Root size is {root_size}, with remaining: {space_remaining}");
+    let needed = if space_remaining > SECOND_PART_MINIMUM {
+        space_remaining - SECOND_PART_MINIMUM
+    } else {
+        SECOND_PART_MINIMUM - space_remaining
+    };
+    println!("Needed: {needed}");
+    let second: u32 = all_dirs
+        .iter_mut()
+        .filter(|x| x.file_type == FileType::Directory)
+        .filter(|x| x.size >= needed)
+        .map(|x| x.size)
+        .min()
+        .unwrap_or(0);
+    println!("Second: {second}"); //2786160 is too high
 }
 
 fn get_dirs(input: String, max_depth: &mut i32) -> Vec<FileDetails> {
@@ -92,9 +114,10 @@ fn get_dir_sizes(
     filter: FileType,
 ) -> Vec<FileDetails> {
     let mut new_dirs: Vec<FileDetails> = supposed_directory.iter().cloned().collect();
+    let mut dir_cache: Vec<FileDetails> = supposed_directory.iter().cloned().collect();
 
     for i in (0..=max_depth).rev() {
-        for info in supposed_directory
+        for info in dir_cache
             .iter()
             .filter(|x| x.depth == i && x.file_type == filter)
         {
@@ -102,6 +125,7 @@ fn get_dir_sizes(
                 parent.size += info.size;
             }
         }
+        dir_cache = new_dirs.clone();
     }
     new_dirs
 }
