@@ -1,4 +1,5 @@
 pub mod day;
+pub mod eight;
 pub mod fileload;
 pub mod five;
 pub mod four;

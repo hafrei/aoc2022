@@ -131,7 +131,6 @@ fn create_structure(
                     depth: 0,
                     file_type: FileType::Directory,
                 });
-            } else {
             }
 
             let _ = inner_line.pop(); //Drop the "cd"

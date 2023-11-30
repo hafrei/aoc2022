@@ -6,7 +6,6 @@ const INPUTS_DIR: &str = "inputs";
 
 pub fn read_input(day: &str, input_buffer: &mut String) -> Result<Day, FileLoadError> {
     let proj_file = format!("src/{}.rs", day);
-    //let proj_file_path = Path::new(&proj_file);
     let mut root = env::current_dir()?;
 
     root.push(proj_file);
@@ -26,9 +25,7 @@ pub fn read_input(day: &str, input_buffer: &mut String) -> Result<Day, FileLoadE
     } else {
         return Err(FileNotFound);
     }
-    let res = Day::from_str(day)?;
-
-    Ok(res)
+    Day::from_str(day)
 }
 
 #[derive(Debug)]
