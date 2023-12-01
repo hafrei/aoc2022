@@ -78,28 +78,25 @@ pub fn run(input: String) {
         let Tree { x, y, .. } = trees.iter().last().unwrap();
         max_x = *x;
         max_y = *y;
-        let forest = Forest {
-            x_max: *x,
-            y_max: *y,
-            trees: &trees,
-        };
-        println!("{}", forest);
     }
+    print_forest(&mut trees);
     find_visible(&mut trees, Flightpath::Down, max_x, max_y);
     find_visible(&mut trees, Flightpath::Up, max_x, max_y);
     find_visible(&mut trees, Flightpath::Left, max_x, max_y);
     find_visible(&mut trees, Flightpath::Right, max_x, max_y);
-    {
-        let Tree { x, y, .. } = trees.iter().last().unwrap();
-        let forest = Forest {
-            x_max: *x,
-            y_max: *y,
-            trees: &trees,
-        };
-        println!("{}", forest);
-    }
+    print_forest(&mut trees);
     let visible = trees.iter().filter(|x| x.colour == Colour::BrightGreen).count();
     println!("There are {visible} trees");
+}
+
+fn print_forest(trees: &mut Vec<Tree>) {
+    let Tree { x, y, .. } = trees.iter().last().unwrap();
+    let forest = Forest {
+        x_max: *x,
+        y_max: *y,
+        trees: &trees,
+    };
+    println!("{}", forest);
 }
 
 fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32) {
