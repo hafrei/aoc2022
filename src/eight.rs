@@ -8,6 +8,7 @@ struct Tree {
     y: u32,
     height: u32,
     colour: Colour,
+    scenic_score: Option<u32>
 }
 
 impl PartialEq for Tree {
@@ -84,9 +85,9 @@ pub fn run(input: String) {
         };
         println!("{}", forest);
     }
-    find_visible(&mut trees, Flightpath::Down, max_x, max_y); //working
-    find_visible(&mut trees, Flightpath::Up, max_x, max_y); //working
-    find_visible(&mut trees, Flightpath::Left, max_x, max_y); //working
+    find_visible(&mut trees, Flightpath::Down, max_x, max_y);
+    find_visible(&mut trees, Flightpath::Up, max_x, max_y);
+    find_visible(&mut trees, Flightpath::Left, max_x, max_y);
     find_visible(&mut trees, Flightpath::Right, max_x, max_y);
     {
         let Tree { x, y, .. } = trees.iter().last().unwrap();
@@ -105,7 +106,6 @@ fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32)
     if path == Flightpath::Right {
         for i in 0..=max_x {
             let mut last_visible = 0;
-            // Right: step_by: 1,   take: len
             for n in trees.iter_mut().filter(|x| x.y == i) {
                 // println!("{n:?}\t{last_visible}");
                 compare_visible(n, &mut last_visible, n.x, 0);
@@ -115,7 +115,6 @@ fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32)
             }
         }
     } else if path == Flightpath::Down {
-        //working
         for i in 0..=max_y {
             let mut last_visible = 0;
             for n in trees.iter_mut().filter(|x| x.x == i) {
@@ -129,7 +128,6 @@ fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32)
     } else if path == Flightpath::Up {
         for i in 0..=max_y {
             let mut last_visible = 0;
-            // Up:    step_by: len, take: len
             for n in trees.iter_mut().filter(|x| x.x == i).rev() {
                 // println!("{n:?}\t{last_visible}");
                 compare_visible(n, &mut last_visible, n.y, max_y);
@@ -139,7 +137,6 @@ fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32)
             }
         }
     } else {
-        // Left:  step_by: 1,   take: len
         for i in 0..=max_x {
             let mut last_visible = 0;
             for n in trees.iter_mut().filter(|x| x.y == i).rev() {
@@ -168,6 +165,7 @@ fn get_colour_forest(input: String, forest: &mut Vec<Tree>) {
                 y: i as u32,
                 height: (x.to_digit(10).unwrap() as u32),
                 colour: Colour::DarkGray,
+                scenic_score: None,
             };
             forest.push(tree);
         }
