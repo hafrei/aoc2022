@@ -8,7 +8,7 @@ struct Tree {
     y: u32,
     height: u32,
     colour: Colour,
-    scenic_score: Option<u32>
+    scenic_score: Option<u32>,
 }
 
 impl PartialEq for Tree {
@@ -40,7 +40,6 @@ impl Eq for Tree {}
 
 struct Forest<'a, T: 'a> {
     x_max: u32,
-    y_max: u32,
     trees: &'a [T],
 }
 
@@ -72,36 +71,53 @@ enum Flightpath {
 pub fn run(input: String) {
     let mut trees = Vec::new();
     get_colour_forest(input, &mut trees);
-    let mut max_x = 0;
-    let mut max_y = 0;
-    {
+    let (max_x, max_y) = {
         let Tree { x, y, .. } = trees.iter().last().unwrap();
-        max_x = *x;
-        max_y = *y;
-    }
+        (*x, *y)
+    };
     print_forest(&mut trees);
-    find_visible(&mut trees, Flightpath::Down, max_x, max_y);
-    find_visible(&mut trees, Flightpath::Up, max_x, max_y);
-    find_visible(&mut trees, Flightpath::Left, max_x, max_y);
-    find_visible(&mut trees, Flightpath::Right, max_x, max_y);
+    find_visible(&mut trees, Flightpath::Down, 0, 0, max_x, max_y);
+    find_visible(&mut trees, Flightpath::Up, 0, 0, max_x, max_y);
+    find_visible(&mut trees, Flightpath::Left, 0, 0, max_x, max_y);
+    find_visible(&mut trees, Flightpath::Right, 0, 0, max_x, max_y);
     print_forest(&mut trees);
-    let visible = trees.iter().filter(|x| x.colour == Colour::BrightGreen).count();
+    let visible = trees
+        .iter()
+        .filter(|x| x.colour == Colour::BrightGreen)
+        .count();
     println!("There are {visible} trees");
+    let mut trees = trees
+        .into_iter()
+        .map(|mut x| {
+            x.colour = Colour::DarkGray;
+            x
+        })
+        .collect::<Vec<Tree>>();
+
+    println!();
+    print_forest(&mut trees);
+    todo!();
 }
 
 fn print_forest(trees: &mut Vec<Tree>) {
-    let Tree { x, y, .. } = trees.iter().last().unwrap();
+    let Tree { x, .. } = trees.iter().last().unwrap();
     let forest = Forest {
         x_max: *x,
-        y_max: *y,
         trees: &trees,
     };
     println!("{}", forest);
 }
 
-fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32) {
+fn find_visible(
+    trees: &mut Vec<Tree>,
+    path: Flightpath,
+    min_x: u32,
+    min_y: u32,
+    max_x: u32,
+    max_y: u32,
+) {
     if path == Flightpath::Right {
-        for i in 0..=max_x {
+        for i in min_x..=max_x {
             let mut last_visible = 0;
             for n in trees.iter_mut().filter(|x| x.y == i) {
                 // println!("{n:?}\t{last_visible}");
@@ -112,7 +128,7 @@ fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32)
             }
         }
     } else if path == Flightpath::Down {
-        for i in 0..=max_y {
+        for i in min_y..=max_y {
             let mut last_visible = 0;
             for n in trees.iter_mut().filter(|x| x.x == i) {
                 // println!("{n:?}\t{last_visible}");
@@ -123,7 +139,7 @@ fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32)
             }
         }
     } else if path == Flightpath::Up {
-        for i in 0..=max_y {
+        for i in min_y..=max_y {
             let mut last_visible = 0;
             for n in trees.iter_mut().filter(|x| x.x == i).rev() {
                 // println!("{n:?}\t{last_visible}");
@@ -134,7 +150,7 @@ fn find_visible(trees: &mut Vec<Tree>, path: Flightpath, max_x: u32, max_y: u32)
             }
         }
     } else {
-        for i in 0..=max_x {
+        for i in min_x..=max_x {
             let mut last_visible = 0;
             for n in trees.iter_mut().filter(|x| x.y == i).rev() {
                 // println!("{n:?}\t{last_visible}");
